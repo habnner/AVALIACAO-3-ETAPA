@@ -1,17 +1,20 @@
 // src/components/BookItem.tsx
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import BookCover from './BookCover';
 import { Book } from '../types/book';
 
 interface BookItemProps {
   book: Book;
   onToggleRead: (id: string) => void;
   onDelete: (id: string) => void;
+  onPress?: (book: Book) => void;
 }
 
-export default function BookItem({ book, onToggleRead, onDelete }: BookItemProps) {
+export default function BookItem({ book, onToggleRead, onDelete, onPress }: BookItemProps) {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={() => onPress?.(book)}>
+      <BookCover uri={book.coverImage} width={48} height={64} style={styles.thumb} />
       <View style={styles.info}>
         <Text style={styles.title}>{book.title}</Text>
         <Text style={styles.author}>{book.author}</Text>
@@ -31,7 +34,7 @@ export default function BookItem({ book, onToggleRead, onDelete }: BookItemProps
           <Text style={styles.deleteText}>Excluir</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -44,6 +47,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+  },
+  thumb: {
+    marginRight: 12,
   },
   info: {
     flex: 1,

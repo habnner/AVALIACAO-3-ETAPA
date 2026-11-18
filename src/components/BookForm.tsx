@@ -1,93 +1,143 @@
-// src/components/BookForm.tsx
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import BookCover from './BookCover';
+import { Book } from '../types/book';
 
 interface BookFormProps {
-  onAddBook: (title: string, author: string, genre: string) => void;
+  initialBook?: Book; // quando informado, o formulário está em modo de edição
+  onSubmit: (book: Book) => void;
 }
 
-export default function BookForm({ onAddBook }: BookFormProps) {
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [genre, setGenre] = useState('');
+export default function BookForm({ initialBook, onSubmit }: BookFormProps) {
+  const [title, setTitle] = useState(initialBook?.title ?? '');
+  const [author, setAuthor] = useState(initialBook?.author ?? '');
+  const [genre, setGenre] = useState(initialBook?.genre ?? '');
+  const [coverImage, setCoverImage] = useState<string | undefined>(initialBook?.coverImage);
   const [error, setError] = useState('');
 
-  const handleSubmit = () => {
-    if (!title.trim() || !author.trim()) {
-      // Alert.alert não funciona na web, por isso o erro aparece na própria tela
-      setError('Informe o título e o autor do livro.');
+  // Recurso nativo: galeria de imagens
+  const pickImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        setError('Permissão negada: libere o acesso à galeria nas configurações para escolher uma capa.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 0.4,
+        base64: true, // a imagem é salva junto com o livro, então não some ao fechar o app
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setCoverImage(
+          asset.base64
+            ? `data:${asset.mimeType ?? 'image/jpeg'};base64,${asset.base64}`
+            : asset.uri
+        );
+        setError('');
+      }
+    } catch {
+      setError('Não foi possível acessar a galeria neste dispositivo.');
+    }
+  };
+
+  const handleSave = () => {
+    if (!title.trim() || !author.trim() || !genre.trim()) {
+      setError('Preencha todos os campos obrigatórios: título, autor e gênero.');
       return;
     }
 
-    onAddBook(title.trim(), author.trim(), genre.trim() || 'Sem gênero');
-    setTitle('');
-    setAuthor('');
-    setGenre('');
-    setError('');
+    onSubmit({
+      id: initialBook?.id ?? Date.now().toString(),
+      title: title.trim(),
+      author: author.trim(),
+      genre: genre.trim(),
+      isRead: initialBook?.isRead ?? false,
+      coverImage,
+    });
   };
 
   return (
-    <View style={styles.form}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <Text style={styles.headerTitle}>{initialBook ? 'Editar Livro' : 'Cadastrar Novo Livro'}</Text>
+
+      <Text style={styles.label}>Título do Livro *</Text>
+      <TextInput style={styles.input} placeholder="Digite o título" value={title} onChangeText={setTitle} />
+
+      <Text style={styles.label}>Autor *</Text>
+      <TextInput style={styles.input} placeholder="Digite o autor" value={author} onChangeText={setAuthor} />
+
+      <Text style={styles.label}>Gênero *</Text>
       <TextInput
         style={styles.input}
-        placeholder="Título"
-        value={title}
-        onChangeText={setTitle}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Autor"
-        value={author}
-        onChangeText={setAuthor}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Gênero"
+        placeholder="Ex: Ficção, Romance, Técnico"
         value={genre}
         onChangeText={setGenre}
-        onSubmitEditing={handleSubmit}
       />
+
+      <Text style={styles.label}>Capa do Livro</Text>
+      <TouchableOpacity style={styles.imageButton} onPress={pickImage} activeOpacity={0.8}>
+        <Text style={styles.imageButtonText}>
+          {coverImage ? 'Trocar capa da galeria' : 'Selecionar capa da galeria'}
+        </Text>
+      </TouchableOpacity>
+
+      {coverImage ? (
+        <BookCover uri={coverImage} width={100} height={140} style={styles.preview} />
+      ) : null}
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit} activeOpacity={0.8}>
-        <Text style={styles.buttonText}>Adicionar livro</Text>
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.8}>
+        <Text style={styles.saveButtonText}>{initialBook ? 'Salvar alterações' : 'Salvar Livro'}</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  form: {
-    backgroundColor: '#fff',
+  container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
+  headerTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, color: '#333' },
+  label: { fontSize: 14, fontWeight: '600', color: '#444', marginBottom: 6 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 15,
-    marginBottom: 8,
-    backgroundColor: '#fafafa',
+  imageButton: {
+    backgroundColor: '#6200ee',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
   },
+  imageButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  preview: { alignSelf: 'center', marginBottom: 16 },
   error: {
     color: '#c0392b',
-    fontSize: 13,
-    marginBottom: 8,
+    backgroundColor: '#fdecea',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 14,
   },
-  button: {
-    backgroundColor: '#0e8094',
-    borderRadius: 6,
-    paddingVertical: 10,
+  saveButton: {
+    backgroundColor: '#03dac6',
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center',
+    marginTop: 4,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
+  saveButtonText: { color: '#000', fontWeight: 'bold', fontSize: 16 },
 });

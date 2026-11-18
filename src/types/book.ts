@@ -5,4 +5,5 @@ export interface Book {
   author: string;
   genre: string;
   isRead: boolean;
+  coverImage?: string;
 }
