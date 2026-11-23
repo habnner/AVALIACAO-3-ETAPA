@@ -15,8 +15,8 @@ export default function BookDetailScreen({ route, navigation }: Props) {
     navigation.navigate('BookForm', {
       bookToEdit: book,
       onSave: (updated: Book) => {
-        setBook(updated); // atualiza esta tela
-        onSave(updated); // atualiza a lista da Home
+        setBook(updated); 
+        onSave(updated); 
       },
     });
   };
