@@ -22,14 +22,12 @@ export default function HomeScreen({ navigation }: Props) {
     setIsError(error);
   };
 
-  // A mensagem some sozinha depois de 2,5 segundos
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(''), 2500);
     return () => clearTimeout(timer);
   }, [message]);
 
-  // Carrega os livros salvos ao abrir o app
   useEffect(() => {
     loadBooks()
       .then((saved) => setBooks(saved ?? INITIAL_BOOKS))
@@ -37,7 +35,6 @@ export default function HomeScreen({ navigation }: Props) {
       .finally(() => setLoaded(true));
   }, []);
 
-  // Salva sempre que a lista mudar (depois do carregamento inicial)
   useEffect(() => {
     if (!loaded) return;
     saveBooks(books).catch(() => showMessage('Não foi possível salvar as alterações.', true));
