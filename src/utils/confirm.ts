@@ -1,6 +1,5 @@
 import { Alert, Platform } from 'react-native';
 
-// Alert.alert com botões não funciona na web, então usamos window.confirm lá
 export function confirmDelete(title: string, onConfirm: () => void) {
   const message = 'Essa ação não pode ser desfeita.';
 
