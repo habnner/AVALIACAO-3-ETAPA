@@ -5,7 +5,7 @@ import BookCover from './BookCover';
 import { Book } from '../types/book';
 
 interface BookFormProps {
-  initialBook?: Book; // quando informado, o formulário está em modo de edição
+  initialBook?: Book; 
   onSubmit: (book: Book) => void;
 }
 
@@ -16,7 +16,6 @@ export default function BookForm({ initialBook, onSubmit }: BookFormProps) {
   const [coverImage, setCoverImage] = useState<string | undefined>(initialBook?.coverImage);
   const [error, setError] = useState('');
 
-  // Recurso nativo: galeria de imagens
   const pickImage = async () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -31,7 +30,7 @@ export default function BookForm({ initialBook, onSubmit }: BookFormProps) {
         allowsEditing: true,
         aspect: [3, 4],
         quality: 0.4,
-        base64: true, // a imagem é salva junto com o livro, então não some ao fechar o app
+        base64: true, 
       });
 
       if (!result.canceled && result.assets.length > 0) {
