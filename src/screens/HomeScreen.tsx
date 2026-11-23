@@ -60,6 +60,7 @@ export default function HomeScreen({ navigation }: Props) {
     });
   };
 
+  
   return (
     <View style={styles.container}>
       {message ? (
