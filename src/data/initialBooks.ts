@@ -1,6 +1,5 @@
 import { Book } from '../types/book';
 
-// Livros iniciais, usados só na primeira vez que o app abre
 export const INITIAL_BOOKS: Book[] = [
   {
     id: '1',
