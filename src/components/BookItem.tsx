@@ -1,4 +1,5 @@
 // src/components/BookItem.tsx
+
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BookCover from './BookCover';
