@@ -7,6 +7,7 @@ import { RootStackParamList } from '../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookDetail'>;
 
+
 export default function BookDetailScreen({ route, navigation }: Props) {
   const [book, setBook] = useState<Book>(route.params.book);
   const onSave = route.params.onSave;
